@@ -165,3 +165,116 @@ app.get("/bruxos/:id", async (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}🚀`);
 });
+
+app.get("/varinhas/", async (req, res) => {
+  try {
+    const resultado = await pool.query("SELECT * FROM varinhahp");
+    res.json({
+      total: resultado.rowCount,
+      varinhas: resultado.rows,
+    });
+  } catch (error) {
+    console.error("Erro ao exibir todas varinhas", error);
+    res.status(500).json({ message: "Erro ao exibir todas varinhas" });
+  }
+});
+
+app.post("/varinhas", async (req, res) => {
+  const { material, comprimento, nucleo, datafabri } = req.body;
+
+  let materiais = ["Carvalho", "Cedro", "Faia", "Nogueira"];
+  let nucleos = [
+    "Pena de Fênix",
+    "Pelo de Unicórnio",
+    "Pelo de Veela",
+    "Dente de Basilisco",
+  ];
+
+  if (!materiais.includes(req.body.material)) {
+    return res.status(400).send({ message: "Material não encontrado!" });
+  }
+
+  if (!nucleos.includes(req.body.nucleo)) {
+    return res.status(400).send({ message: "Núcleo não encontrado!" });
+  }
+
+  if (comprimento < 20 || comprimento > 40) {
+    return res
+      .status(400)
+      .send({ message: "Comprimento deve ser entre 20 e 40 cm." });
+  }
+
+  if (!material || !comprimento || !nucleo || !datafabri) {
+    return res
+      .status(400)
+      .send({ message: "Campos obrigatórios não preenchidos!" });
+  }
+
+  try {
+    await pool.query(
+      "INSERT INTO varinhahp (material, comprimento, nucleo, datafabri) VALUES ($1, $2, $3, $4)",
+      [material, comprimento, nucleo, datafabri]
+    );
+
+    res.status(201).send({ message: "Varinha inserida com sucesso!" });
+  } catch (error) {
+    console.error("Erro ao inserir Varinha", error);
+    res.status(500).json({ message: "Erro ao inserir Varinha" });
+  }
+});
+
+app.delete("/varinhas/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    await pool.query("DELETE FROM varinhahp WHERE id = $1", [id]);
+    res.status(200).send({ message: "Varinha deletada com sucesso!" });
+  } catch (error) {
+    console.error("Erro ao deletar Varinha", error);
+    res.status(500).json({ message: "Erro ao deletar Varinha" });
+  }
+});
+
+app.put("/varinhas/:id", async (req, res) => {
+  let materiais = ["Carvalho", "Cedro", "Faia", "Nogueira"];
+  let nucleos = [
+    "Pena de Fênix",
+    "Pelo de Unicórnio",
+    "Pelo de Veela",
+    "Dente de Basilisco",
+  ];
+
+  const { id } = req.params;
+  const { material, comprimento, nucleo, datafabri } = req.body;
+
+  try {
+    await pool.query(
+      "UPDATE varinhahp SET material = $1, comprimento = $2, nucleo = $3, datafabri = $4 WHERE id = $5",
+      [material, comprimento, nucleo, datafabri, id]
+    );
+
+    res.status(200).send({ message: "Varinha atualizada com sucesso!" });
+  } catch (error) {
+    console.error("Erro ao atualizar Varinha", error);
+    res.status(500).json({ message: "Erro ao atualizar Varinha" });
+  }
+});
+
+app.get("/varinhas/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const resultado = await pool.query(
+      "SELECT * FROM varinhahp WHERE id = $1",
+      [id]
+    );
+    if (resultado.rowCount === 0) {
+      return res.status(404).send({ message: "Id não encontrado!" });
+    } else {
+      res.json({
+        usuario: resultado.rows[0],
+      });
+    }
+  } catch (error) {
+    console.error("Erro ao exibir varinha pelo id", error);
+    res.status(500).json({ message: "Erro ao exibir varinha pelo id" });
+  }
+});

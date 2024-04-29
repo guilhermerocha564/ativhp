@@ -10,9 +10,9 @@ CREATE TABLE backhp (
 
 CREATE TABLE varinhahp (
     ID SERIAL PRIMARY KEY,
-    madeira VARCHAR(100) NOT NULL,
+    material VARCHAR(100) NOT NULL,
     comprimento VARCHAR(100) NOT NULL,
     nucleo VARCHAR(100) NOT NULL,
-    datafabri VARCHAR(100) NOT NULL
+    datafabri INT NOT NULL
 );
 
